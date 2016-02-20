@@ -1,0 +1,123 @@
+---
+title: "Den svenska spelmarknaden, bortom genomsnittet"
+date: "Februari, 2016"
+output: html_document
+---
+
+```{r, include=FALSE}
+library(ggplot2)
+library(scales)
+
+library(xtable)
+options(xtable.comment=FALSE)
+options(xtable.booktabs=TRUE)
+options(xtable.include.rownames=FALSE)
+
+population <- 7300000 # SWELOGS 2008
+```
+
+Medelvärde är en siffra man kan använda för att att beskriva en "genomsnittlig" konsumtion. Men den passar inte alltid. Problemet är att den dåligt beskriver en skev fördelning, dvs en fördelning där några få står för det mesta av konsumtionen.
+
+Den genomsnittligen svensken handlar illegal narkotika för `r signif(2300000000/population, 3)` kronor varje år. Trots att detta påstående är [statistiskt korrekt](http://www.svd.se/sex-och-droger-omsatter-miljarder-svenskarna-koper-droger-och-prostituerade-for-miljarder) och fungerar som nationalekonomisk kuriosa, skulle de flesta hålla med om att siffran är en smula missvisande. Siffran är inte representativ. De flesta svenskar [handlar inte narkotika alls](http://www.can.se/sv/drogfakta/fragor-och-svar/narkotika/#Hur-manga-anvander-narkotika-i-Sverige).
+
+När man pratar om den Svenska spelmarknaden brukar det låta något i stil med att [*Svenskarna köper spel för ungefär femtio miljarder varje år, eller lite drygt sextusen per person*](http://www.lotteriinspektionen.se/sv/Om-oss/Statistik/). Beroende på hur beredd man är att brodera ut för att sätta siffran i ett sammanhang, formuleras den senare siffran [mer](http://www.thegamblermagazine.se/2016/02/18/sammanfattning-den-reglerade-spelmarknaden-2015/) eller [mindre](http://www.dn.se/ekonomi/oreglerade-internetbolag-tog-hem-spelet-2014/) normaliserande. Andemeningen blir att "såhär spelar andra".
+
+Samtidigt blir de flesta jag pratar med förvånade av siffran. När jag frågar hur många de känner som köper spel för femhundra eller mer i månaden kommer de sällan på någon alls -- Gunnar, som ju alltid sitter i spelbutiken, undantaget. Detta är ett typiskt symptom på en skev fördelning, och det är värt att fråga sig hur representativ siffran sextusen om året verkligen är.
+
+
+
+[Lotteriinspektionen](http://www.lotteriinspektionen.se) är den svenska spelmarknadens tillsynsmyndighet. Som sådan samlar man statistik från de reglerade spelbolagen. Man gör även undersökningar för att mäta spelandet på den oreglerade marknaden. Allt detta presenterar man föredömligt  [transparent](http://www.lotteriinspektionen.se/sv/Om-oss/Statistik/) och [relevant](http://www.lotteriinspektionen.se/sv/Om-oss/Statistik/Veckans-statistik/). 
+
+Det Lotteriinspektionen dock saknar är individuella spelares information. Den sammanslagna statistik man får tvingar fram ett ett makroekonomiskt perspektiv på spelmarknaden. Så här mycket omsätter svenskarna, och dividerat med hur många vi är så blir det så här mycket per person.
+
+## Medianen berättar en annan historia
+
+En ofta bättre siffra att tala om för en skev fördelning är *medianen*. Medianen är den siffra som delar befolkningen i två lika delar: den del som konsumerar lika mycket eller mindre och den del som konsumerar lika mycket eller mer. För att kunna räkna ut denna behöver man veta varje individs konsumtion, något som vi konstaterade att Lotteriinspektionen saknar.
+
+Vi har som tur är en annan källa att luta oss mot! [SWELOGS](http://www.folkhalsomyndigheten.se/amnesomraden/andts/spel/swelogs-befolkningsstudie/) är den officiella svenska befolkningsstudien kring spel som Folkhälsoinstitutet genomför ungefär var tionde år. [Den i skrivande stund senaste](http://www.folkhalsomyndigheten.se/publicerat-material/publikationer/Spel-om-pengar-och-spelproblem-i-Sverige-20082009-Huvudresultat-fran-SWELOGS-befolkningsstudie/) har visserligen några år på nacken, men visar sig innehålla det vi letar efter. I [uppföljningsrapporten 2009/2010](https://www.folkhalsomyndigheten.se/pagefiles/12792/R2012-04-Spel-om-pengar-och-spelproblem-i-Sverige-2009-2010.pdf) tabell 3.11 hittar vi en sammanställning av hur tusentals spelare svarat på frågan hur mycket pengar de satsat på spel de senaste 30 dagarna. Här hittar vi inte bara ett medelvärde utan även mediankonsumtionen.
+
+```{r, echo=FALSE, results='asis'}
+swelogs <- data.frame(År=c("2008/09", "2009/10"),
+                       Svaranden=c(as.integer(8165), as.integer(6021)),
+                       Medelvärde=c(as.integer(377), as.integer(301)),
+                       Standardavvikelse=c(as.integer(3719), as.integer(2654)),
+                       Median=c(as.integer(40), as.integer(50)))
+print(xtable(swelogs), type="html")
+```
+
+Låt oss använda 2008/09 som exempel. De svarande anger i medelvärde att de köpt spel för `r subset(swelogs, År=='2008/09')$Medelvärde` kronor, men endast `r subset(swelogs, År=='2008/09')$Median` i median. Annorlunda uttryckt, hälften av svenskarna spelar för `r subset(swelogs, År=='2008/09')$Median` kronor eller mindre på en månad, och hälften mer.
+
+Här får vi siffror på det vi misstänkte. Hälften av befolkningen spelar för mindre än en femtiolapp i månanden. Visst smakar denna siffran annorlunda än `r subset(swelogs, År=='2008/09')$Medelvärde` per månad eller `r signif(subset(swelogs, År=='2008/09')$Medelvärde * 365/30, 2)` per år? Alla tre är korrekta, men de ger olika bild av verkligheten.
+
+## En modell som nyanserar
+
+Faktum är att siffrorna från SWELOGS kan lära oss än mer, om vi kostar på oss ett antagande till.
+
+Många naturliga och ekonomiska fenomen är skevt fördelade: Inkomst per person, intäkter per kund, förmögenhet per person, etc. Många har hört talas om [80/20-principen](https://en.wikipedia.org/wiki/Pareto_principle), som säger att 80% av intäkterna ofta kommer från 20% av kunderna, att 80% av den samlade förmögenheten kontrolleras av 20% av befolkningen, och så vidare.
+
+Ett så här vanligt fenomen är givetvis väl studerat. Ofta modellerar ekonomer sådana här skeva fördelningar med en så kallad [log-normal distribution](https://en.wikipedia.org/wiki/Log-normal_distribution), och vi följer goda exempel om vi försöker göra likaledes. 
+
+```{r, include=FALSE}
+
+swelogs$log.mu <- with(swelogs, log((Medelvärde^2) / sqrt(Standardavvikelse^2 + Medelvärde^2)))
+swelogs$log.sigma <- with(swelogs, sqrt(log((Standardavvikelse^2) / (Medelvärde^2) + 1)))
+
+set.seed(20160220)
+
+sim.2008 <- exp(rnorm(population, mean=subset(swelogs, År=='2008/09')$log.mu, sd=subset(swelogs, År=='2008/09')$log.sigma))
+sim.2009 <- exp(rnorm(population, mean=subset(swelogs, År=='2009/10')$log.mu, sd=subset(swelogs, År=='2009/10')$log.sigma))
+```
+
+SWELOGS uppmätta medelvärde och standardavvikelse innehåller all information vi behöver för att skapa vår modell. Innan vi tittar på vad den säger, är det god sed att undersöka om våra antaganden verkar rimliga. Vi låter därför modellen uppskatta ett antal mätetal och jämför med verkligheten för att se hur väl de stämmer.
+
+ * Den faktiska medianen från SWELOGS rapporteras vara `r subset(swelogs, År == '2008/09')$Median` kronor per månad. I vår modell uppskattas den till `r signif(median(sim.2008), 2)`.
+ * SWELOGS uppskattar att 30% inte spelat alls under 2008. I vår modell uppskattar vi att `r percent(sum(sim.2008 < 10)/length(sim.2008))` spelar för under tio kronor per månad.
+ * Tabell 3.10 i SWELOGS uppskattar att 50% av befolkningen spelar mellan 0-40 kronor per månad, 30% uppskattas spela 41-320 kronor, 10% 321-600 kronor, och 10% för mer än 600 kronor per månad. Vår modell ger `r percent(round(sum(sim.2008 < 40)/length(sim.2008), 2))`, `r percent(round(sum(sim.2008 > 40 & sim.2008 < 320)/length(sim.2008), 2))`, `r percent(round(sum(sim.2008 > 320 & sim.2008 < 600)/length(sim.2008), 2))` och `r percent(round(sum(sim.2008 > 600)/length(sim.2008), 2))`. 
+
+## "Alla modeller är fel, vissa är användbara"
+
+Modellen vi har är inte perfekt, men den verkar onekligen ligga i rätt härad. 
+
+Min egen erfarenhet från speldata är att den är distribuerat ungefär symmetriskt runt logaritmen för spelköp. I många ekonomiska modeller finns det ofta fler outliers (här spelare med mycket hög och mycket låg konsumtion) än väntat från en log-normal distribution, men eftersom vi rör oss i ungefärlighetens trakter låter vi detta bero.
+
+Vår modell är givetvis förenklad. Den bygger på självrapporterade siffror, från 2008, och med ganska så svepande antaganden om att höra till en log-normal distribution. Ju längre ut i extrem-värdena vi rör oss, desto försiktigare bör vi bli med siffrorna. Vi uppskattar till exempel att `r sum(sim.2008 > 1000000)` personer köper spel för mer än en miljon under en månad och `r sum(sim.2008 > 100000)` för mer än 100.000. Dessa siffror bör inte tas för sanning, men vi är mycket närmare sanningen än om vi antar en jämn fördelning där det vanliga är att man spelar för `r subset(swelogs, År == '2008/09')$Medelvärde` kronor i månaden.
+
+Den som vill ha säkrare siffror bör inte rikta blicken mot mig. Rikta den istället mot spelbolagen och tillsynsmyndigheten. Mer än hälften av spelandet i Sverige är knutet till en individ. All data man behöver för att få svar och löpande uppföljning finns -- något som en ny spelreglering bör ta i beaktan. I väntan på detta står vårt mesta hopp till djupare svar till nästa runda SWELOGS. Och tills dess får vi nöja oss med det vi har.
+
+
+## Vad vi kan lära
+
+Vi kan nu använda modellen för att undersöka hur spelmarknaden ser ut. Mest relevant i vår jakt på att beskriva dess skevhet är att undersöka hur stor andel av befolkningen som står för hur stor del av spelmarknaden.
+
+```{r, echo=FALSE, warning=FALSE}
+df.sim.2008 <- data.frame(wager=sort(sim.2008, decreasing=TRUE))
+
+
+df.sim.2008$cum.wager <- cumsum(df.sim.2008$wager)
+df.sim.2008$p.cum.wager <- cumsum(df.sim.2008$wager) / sum(df.sim.2008$wager)
+df.sim.2008$p.rank <- 1:nrow(df.sim.2008)/nrow(df.sim.2008)
+
+top.10.wager <- df.sim.2008[nrow(df.sim.2008)*0.1,]$p.cum.wager
+
+ggplot(df.sim.2008[seq(1, nrow(df.sim.2008), 10000), ], aes(x=p.rank, y=p.cum.wager)) +
+  geom_line() +
+  annotate("segment", x=0, xend=0.1, y=top.10.wager, yend=top.10.wager, linetype="dotted") +
+  annotate("segment", x=0.1, xend=0.1, y=0, yend=top.10.wager, linetype="dotted") +
+  #annotate("text", label=paste("10% av befolkningen står för", percent(round(top.10.wager,2)), "av spelandet"), x=0, y=top.10.wager+0.05, hjust=0, size=6) +
+  theme_bw() +
+  scale_x_continuous(label=percent, limits=c(0, 0.25)) +
+  scale_y_continuous(label=percent) +
+  labs(x="Andel av befolkningen", y="Kumulativ andel av spelandet i Sverige")
+```
+
+Grafen läses såsom att 10% av befolkningen står för `r percent(round(top.10.wager, 2))` av bruttospelandet. `r percent(signif(max(subset(df.sim.2008, p.cum.wager < 0.5)$p.rank), 2))` av befolkningen eller `r comma(signif(max(subset(df.sim.2008, p.cum.wager < 0.5)$p.rank) * nrow(df.sim.2008), 3))` personer står för hälften av spelandet. Endast `r percent(round(max(subset(df.sim.2008, wager > mean(df.sim.2008$wager))$p.rank), 2))` av befolkningen spelar lika mycket som genomsnittet eller mer.
+
+När vi betänker att grafen ovan är avklippt vid 25% av befolkningen, får vi onekligen ett annat perspektiv på hur vi bör betrakta "genomsnittet".
+
+
+
+## Varför det spelar roll
+
+Normförskjutning hör samman med ökat spelande och spelproblem. Man tror helt enkelt att alla andra också spelar mycket. Samtidigt vet vi att normer är kraftfulla. Forskning visar till exempel att [en mer realistisk uppfattning](http://www.ncbi.nlm.nih.gov/pubmed/26009785) om hur mycket andra spelar [leder till sundare spelvanor](http://www.tandfonline.com/doi/full/10.1080/07448481.2013.865626). Eftersom [samhället idag](http://www.bokus.com/bok/9789147114771/ansvar-och-marknader-vem-tar-ansvar-for-spelmarknadens-baksida/) baserar sin ansvarsfördelning kring spel och spelproblem kring spelarens ansvar och "Informed Choice", måste man rimligen ge allmänheten en representativ bild av vad normalt spelande är. Och om vi ska tro siffrorna ovan, spelar 85% av alla medel-Svenssons *inte* för sextusen om året.
+
+Poängen med denna text är inte de faktiska siffrorna. Poängen är att spel är skevt fördelat, och att vi inte pratar om det. Vi har [tappat bort detta faktum](http://data.riksdagen.se/dokument/GR02Kr278) ur dagens diskurs. Detta är särskilt problematiskt med tanke på att vi har en tänkt omreglering av spelmarknaden framför oss. Givet spelets baksida, var går samhällets smärtgräns och ansvar när fördelningen [fortsätter att bli allt mer skev](http://www.lotteriinspektionen.se/sv/Press/Nyheter/Farre-spelar/)?
