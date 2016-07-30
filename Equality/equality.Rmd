@@ -1,0 +1,217 @@
+---
+title: "Att mäta spelproblem"
+date: "2016-07-30"
+output:
+  tufte::tufte_html: default
+  tufte::tufte_handout:
+    citation_package: natbib
+    latex_engine: xelatex
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
+link-citations: yes
+---
+
+```{r setup, include=FALSE}
+library(tufte)
+# invalidate cache when the tufte version changes
+knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'))
+options(htmltools.dir.version = FALSE)
+```
+
+```{r, include=FALSE}
+library(ggplot2)
+library(scales)
+library(dplyr)
+```
+
+
+Rummet blir tyst första gången siffrorna presenteras. Det finns två sorters tystnad. Den dåliga; vad *sa* han? Och den bra; *vad* sa han? Rummet blir tyst på det bra sättet. Varje gång.
+
+Det bästa mått jag stött på för spelproblem är *Andel intäkter från problemspelare*. Som mätetal har det en rad trevliga egenskaper. Alla förstår vad det betyder. Det spelar roll. Det berör. Få ifrågasätter varför man använder det. Det går att skära på allsköns ledder: spelform, kohort, kampanj, tid. Och första gången man får se sitt spelbolags siffror förändras bilden av vad man gör, för gott. Rummet blir tyst.
+
+Än mer, *Andel problemintäkter* är robust. En reklamkampanj som får många småspelare att prova ett spel får inte siffran att spåra ur, i motsats till *Andel problemspelare*. Man förbättrar *Andel problemintäkter*  genom att marknadsföra sig mot sunda spelare och sedan hjälpa dem att förbli sunda, eller genom att hjälpa dem som har problem att spela mindre. En lägre siffra betyder mindre negativa konsekvenser per intjänad krona, både i teorin och i praktiken.
+
+Problemet med *Andel problemintäkter* är att siffran kostar en slant. Talet behöver ett mått på spelproblem, vilket betyder enkäter, vilket betyder pengar, ledtid, huvudvärk och ifrågasättanden. Det fina är att vi kan göra mer av våra dyrt insamlade enkäter än vad vi oftast gör.
+
+Som de flesta befolkningsundersökningar, gjorde SWELOGS 2008 en uppskattning av *Andel problemintäkter* utifrån sina svar. Med självrapporterade siffror och skev fördelning, var man försiktig. De 25% man kom fram till blev till största delen en parantes i rapporten. Men ihop med speldata finns ett bättre sätt. Utifrån självtestsvaren bygger man en modell för att beräkna risken för spelproblem per spelare. Denna använder man för att räkna ut vårt mätetal i större grupper och från faktisk data^[$\frac{\sum_i^N risk_i netloss_i}{\sum_i^N netloss_i}$].
+
+Det fanns en tid när detta ansågs osäkert och svårt. Man hade inte data, och inte självtest, och så var ju spel så individuellt att det gick ju absolut inte att uppskatta risk utifrån speldata. Idag vet vi att det inte är så. Det finns gott om modeller bland spelbolagen som klassificerar risk, handlingsbart och träffsäkert. Att gå från dessa till att få en tydlig bild av varifrån pengarna kommer är busenkelt.
+
+
+## Andra mått
+
+Det finns såklart andra tal man kan tänka sig för att mäta spelproblem. *Andel problemspelare* brukar vara det första man kommer att tänka på. Och visst är vi i gott sällskap om vi använder det. Eftersom våra prevalensmätningar mäter just detta brukar det vara denna siffra som svingas som politiskt slagträ. Vi förfasas gemensamt över den höga prevalensen i den spelform som just nu råkar vara under luppen. Poker, under boomen för snart tio år sen. Bingo sticker upp som en återkommande överraskning. Vegas. Och på senare tid online-kasino.
+
+Men så snart vi bryter ned denna siffra från befolkningen, börjar vi lura oss själva. Ta en snabb titt på [förhandsresultaten från den senaste SWELOGS](https://www.folkhalsomyndigheten.se/livsvillkor-levnadsvanor/alkohol-narkotika-dopning-tobak-och-spel-andts/spel/swelogs-prevalensstudie-2015/):
+
+![](/home/henrik/private/braindumps/Equality/spelande.png)
+![](/home/henrik/private/braindumps/Equality/prevalens.png)
+
+Om jag tillåter mig att kisa bara lite grand, ser jag tre grupper av spel. Lotteri/nummerspel, vadslagning, och de farliga -- poker, kasino, bingo. Tre grupper av andel problem: låg, mellan och Åh-Herregud. Tre grupper av popularitet: hälften, en tredjedel, och mindre än tio procent spelar. Det finns ett samband mellan popularitet och risk. Det är varken linjärt eller enkeltriktat, men det finns.
+
+Den ena halvan av detta samband är att mindre riskfyllda spel, till exempel lotterier, är mer folkliga. Alla köper en lott ibland, men få slinker in i en bingohall. Framför allt, lågriskspel som *inte* är folkliga tjänar man inga pengar på, så de försvinner snabbt.
+
+I den andra halvan av sambandet stöter vi på problem med *Andel problemspelare*: folklighet påverkar prevalens. Ju fler som spelar ett spel, desto lägre andel problemspelare kommer det att finnas. Det högintensiva spelarna hittar nya spel först. De som kommer efter är sundare. Ju fler som spelar, desto sundare är de. Det enklaste sättet att minska andelen problemspelare är att få fler att spela.
+
+Man såg till exempel andelen problemspelare i sportspelen *minska* under nyss avgjorda fotbolls-VM. Folk som annars inte satsar på fotboll lade några rader och blev spelare. *Antal problemspelare* må ha ökat, men *Andel problemspelare* sjönk. Detta innebär givetvis inte att fotbolls-EM ger ett sundare spel-Sverige -- tvärtom. Under perioder med mer spelande får fler problem. Men eftersom vi fick än fler sunda spelare -- tillfälligt eller ej -- minskar vårt mätetal.
+
+> *Det enklaste sättet att minska andelen problemspelare är att få fler att spela.*
+
+Att *Andel problemspelare* beter sig såhär beror på vad vi betraktar som hela gruppen. För att mäta talet i en spelform räknar vi antal personer med problem per de som spelar spelet. I en fast grupp, säg befolkningen i stort, funkar måttet fint. Men i mindre grupper än då får vi snart konstiga effekter. Ett annat exempel på samma problem är huruvida ett monopolbolag med uppdrag att verka för folkhälsan ska ha en låg eller en hög andel problemspelare. Om man har lägre andel problemspelare än befolkningen, har man ju misslyckats med kanaliseringen. Om man har högre, har man ju misslyckats med ansvaret. 
+
+Man vill heller inte använda *Antal problemspelare* . Det hade måhända löst problemet med fotbolls-EM, men idén faller snabbt när man till exempel vill jämföra spelformer. En snabb multiplikation av SWELOGS-siffrorna vi såg nyss ger att (ögonmåttat) 41% x 2.2% = `r paste0(100*round(0.41*0.022, 3), "%")` av svenska män har problem och spelar på lotterier, medan endast 6% x 9,5% = `r paste0(100*round(0.06 * 0.095, 3), "%")` har problem och spelar spelautomater. Fler problemspelare skrapar lotter än spelar automater. Självklart innebär inte detta att lotter är ett större problemspel än spelautomater. Skillnaden beror endast och allenast på att lotter är mycket mer populärt.
+
+> *Fler problemspelare skrapar lotter än spelar automater.*
+
+En tredje möjlig siffra vi fiskar runt emellanåt är *Fördelning av intäkter*. Tanken är att de spel där få spelar mycket är värre än de där många spelar lika. Det finns [flera möjliga mått](https://en.wikipedia.org/wiki/Gini_coefficient) på "jämlikhet", men ett enkelt är "Andelen intäkter från topp 10%". Detta tal lockar särskilt eftersom vi redan har all data vi behöver i våra databaser. Inga dyra enkäter behövs.
+
+Spelbolagen har stenkoll på dessa siffror men pratar inte gärna om dem. Vi får gräva djupt i datahögen för att hitta något att använda till vårt exempel. 2005 släppte bwin ett [stort dataset med speldata](http://www.thetransparencyproject.org/Availabledataset) till forskning. Här hittar vi hela fyrtiotusen personers spelande för ett drygt halvår. Genom dessa får vi ett alltför sällsynt titthål kan vi kika in genom för att titta in i ett spelbolag!
+
+
+```{r, include=FALSE}
+products <- c('Sportsbook fixed-odds', 'Sportsbook live-action', 'Poker BossMedia', 'Casino BossMedia', 'SuperToto', 'Games VS', 'Games bwin', 'Games Chartwell')
+
+df <- read.table(unz("bwin.zip", "RawDataIIUserDailyAggregation.txt"), header=TRUE, sep=",")
+df$Product <- products[df$ProductID]
+
+df.tmp <- df %>%
+  filter(Date >= 20050401 & Date < 20050501) %>%
+  group_by(UserID) %>%
+  summarize(wager = sum(Stakes),
+            ggr = sum(Stakes - Winnings)) %>%
+  mutate(ggr = pmax(ggr, 0)) %>% # Only count those who lose
+  arrange(-ggr) %>%
+  mutate(p.rank = row_number() / length(wager),
+         p.ggr = cumsum(ggr) / sum(ggr))
+
+p.10 <- with(df.tmp, max((p.rank <= 0.1) * p.ggr))
+
+
+```
+
+Nedan syns siffrorna för de som spelade under april 2005. De tio procent som spelade mest, stod då för `r paste0(100*round(p.10, 2), "%")` av intäkterna.
+
+
+
+```{r, echo=FALSE, warning=FALSE}
+
+ggplot(df.tmp, aes(p.rank, p.ggr)) +
+  geom_line() +
+  annotate("segment", x=0.1, y=0, xend=0.1, yend=p.10, linetype="dotted") +
+  annotate("segment", x=0, y=p.10, xend=0.1, yend=p.10, linetype="dotted") +
+  annotate("text", x=0.105, y=p.10 - 0.1, label=paste0("10% av spelarna står för\n", 100 * round(p.10, 2), "% av intäkterna"), hjust=0) +
+  labs(x="Andel spelare", y="Kumulativ andel spelande") +
+  scale_x_continuous(label=percent, limits=c(0, 0.25)) +
+  scale_y_continuous(label=percent) +
+  theme_linedraw()
+```
+
+
+Turligt nog har är bwins data indelad även i spelformer, så vi kan jämföra än djupare.
+
+```{r, echo=FALSE, warning=FALSE, fig.fullwidth=TRUE}
+df.tmp <- df %>%
+  filter(Date >= 20050401 & Date < 20050501) %>%
+  group_by(UserID, Product) %>%
+  summarize(wager = sum(Stakes),
+            ggr = sum(Stakes - Winnings)) %>%
+  mutate(ggr = pmax(ggr, 0)) %>% # Only count those who lose
+  arrange(-ggr) %>%
+  group_by(Product) %>%
+  mutate(p.rank = row_number() / length(wager),
+         p.ggr = cumsum(ggr) / sum(ggr))
+
+df.p10 <- df.tmp %>%
+  group_by(Product) %>%
+  summarize(p.10=max((p.rank <= 0.10) * (p.ggr)),
+            n=length(UserID))
+
+df.tmp$Product <- factor(df.tmp$Product, ordered=TRUE, levels=df.p10$Product[order(df.p10$p.10)])
+df.p10$Product <- factor(df.p10$Product, ordered=TRUE, levels=df.p10$Product[order(df.p10$p.10)])
+
+
+ggplot(df.tmp, aes(p.rank, p.ggr)) +
+  geom_line() +
+  geom_segment(data=df.p10, aes(x=0.1, y=0, xend=0.1, yend=p.10), linetype="dotted") +
+  geom_segment(data=df.p10, aes(x=0, y=p.10, xend=0.1, yend=p.10), linetype="dotted") +
+  geom_text(data=df.p10, aes(x=0.15, y=p.10 - 0.2, label=paste0(100 * round(p.10, 2), "%")), hjust=0) +
+  labs(x="", y="") +
+  scale_x_continuous(label=percent, limits=c(0, 0.25)) +
+  scale_y_continuous(label=percent) +
+  facet_wrap(~ Product) +
+  theme_linedraw()
+
+```
+
+
+
+Med tanke på hur riskfyllda vi brukar säga att spelen är, ser vi ut att vara något på spåren. SuperToto, motsvarande Stryktipset, och odds-sport ligger lägst. I toppen ligger de bekanta snabba spelen, inklusive live-sport. Skillnaderna är små, precis som de brukar vara. Men de finns, och de är i den riktning vi förväntar oss.
+
+Men istället för att hoppfullt gräva djupare, inser man att denna siffra fungerar dåligt som styrande. Det stora problemet med är hur *Andel intäkter för topp 10%* påverkas av förändringar. En speloperatör som rekryterar många sunda småspelare -- en ansvarsfull strategi -- kommer att se siffran öka, när fler småspelare tillkommer. Tänk en operatör med 1000 spelare där
+
+ * 100 stycken spelar för 1000:-/månad
+ * 100 stycken spelar för 500:-/månad
+ * 800 stycken spelar för 100:-/månad
+ 
+ Andel intäkter från topp 10% är här
+ 
+ $$\frac{100\cdot1000}{100\cdot1000 + 100\cdot500 + 800\cdot100}=`r 100*round(100*1000 / (100*1000 + 100*500 + 800 * 100), 2)`\%$$
+ 
+ En lyckad kampanj senare har vi fått tusen nya kunder, som alla spelar för en hundralapp i månaden. Andelen har då, trots en god insats, ökat till
+ 
+ $$\frac{100\cdot1000 + 100\cdot500}{100\cdot1000 + 100\cdot500 + 1800\cdot100}=`r 100*round((100*1000 + 100*500)/ (100*1000 + 100*500 + 1800 * 100), 2)`\%$$
+ 
+Omvänt, den operatör som får småspelare att spela mer kommer att se siffran sjunka; inte heller vad man önskar sig av ett mätetal för ansvar. Om vi istället för att få tusen nya kunder får våra 800 spelare att spela för femhundra i månaden, kommer vårt måltal att sjunka till
+
+$$\frac{100\cdot1000}{100\cdot1000 + 100\cdot500 + 800\cdot500}=`r 100*round(100*1000 / (100*1000 + 100*500 + 800 * 500), 2)`\%$$
+ 
+Inget av detta är vad man hoppas på. Det praktiska grundproblemet ligger åter i vad man anser vara spelare. I de problem vi nyss såg räknas bara aktiva spelare -- personer som spelat på spelformen under säg det senaste kvartalet. Att räkna hela kundstocken eller hela befolkningen löser inget. I tabellen nedan ser vi att relativt sunda SuperToto är ett litet spel. Om även de 99% som inte spelat SuperToto ska räknas till spelarna, skulle den stackars procent som faktiskt spelar att stå för 100% av spelandet. SuperToto skulle, tvärt emot verkligheten, anses vara det värsta spelet.
+
+
+```{r, echo=FALSE}
+percent <- function(x) {
+  paste0(100 * round(x, 2), "%")
+}
+
+
+df %>%
+  filter(Date >= 20050401 & Date < 20050501) %>%
+  group_by(UserID, Product) %>%
+  summarize(wager = sum(Stakes),
+            ggr = sum(Stakes - Winnings)) %>%
+  mutate(ggr = pmax(ggr, 0)) %>% # Only those who lost
+  arrange(-ggr) %>%
+  group_by(Product) %>%
+  mutate(p.rank = row_number() / length(wager),
+         p.ggr = cumsum(ggr) / sum(ggr)) %>%
+  summarize(p.players=length(UserID)/length(unique(.$UserID)),
+            p.10=max((p.rank <= 0.10) * (p.ggr))) %>%
+  arrange(p.10) %>%
+  transmute(Produkt=Product, 'Spelare'=percent(p.players), 'Topp 10% intäkter'=percent(p.10)) %>%
+  knitr::kable(align=c('l', 'r', 'r'))
+```
+
+## Sammanfattning
+
+Sammanfattningsvis duger varken *Andel problemspelare* eller *Antal problemspelare* som nyckeltal när man vill använda den bortom befolkningsnivå. *Andel spelande från topp 10%* är ett prima exempel på ett intressant mått men värdelöst styrmedel. Det finns såklart fler möjliga mått, men de flesta är varianter på vad vi redan tittat på. Kvar är, trots att den fordrar lite krumbukter, *Andel problemintäkter*.
+
+Samhället har dålig insyn i spelbolagen. De allra flesta har inte ens någon aning om vilka frågor man bör ställa.
+
+I Sverige är långt mer än hälften av spelandet knutet till en individ, med spelkort eller inloggning. Spelbolagen, både licensierade och o-dito, har stenkoll på sina spelare. Istället för att prata om siffrorna man har, flyttar man diskussionen till att handla om den data som skrapas ihop av andra. Stödlinjens statistik över de inringandes värsta spelform är en sammanställning som de själva varnar för att använda som annat än kuriosa. För egen saks passande siffror handplockas ur undersökningar och kryddas till statistisk oigenkännelighet. Man har inget att vinna och allt att förlora på att vara först med att visa sina faktiska siffror. Samtidigt finns det ingen de måste lyssna på som kräver svar. Knappast en god utgångspunkt för den ombedda självregleringen.
+
+> *Power has a rationality that rationality does not know, whereas rationality does not have a power that power does not know*
+>
+> `r tufte::quote_footer('--- Flyvbjerg')`
+
+Utan vilja spelar ingen fakta i världen roll. De mest ansvarstagande spelbolagen jobbar styrande med *Andel problemintäkter*, på produktnivå. Om siffrorna springer iväg, tar man aktiv handling för att behålla en speloperation man kan stå för. Samtidigt finns det andra som låser in siffrorna, just eftersom man inte mäktar med att förhålla sig till dem. Det enklaste är att inte låtsas om dem.
+
+I ett nytt licenssytem borde rapportering på detta tema ingå. Inte tvunget för att styra vad man får och inte får göra, utan för att visa en sann verklighet. "Det är ju bara någon procent" är inte ett korrekt svar till en aktieägare på mycket spelproblem ett bolag har, och "vi skulle gärna vara utan problemspelarnas pengar" är inte sant.
+
+Så ett handlingsbart förslag. I och med nästa regelverk borde Lotteriinspektionen åläggas att sammanställa denna rapportering:
+
+ 1. Samla indivduell spelhistorik sammanställd per dag och spelform för svenska medborgare. 
+ 2. Ansvara för en löpande analys av spelmarknadens hälsa, t ex genom löpande temperaturtagning med hjälp av enkäter; och
+ 3. Öppet redovisa varifrån spelintäkterna kommer; totalt, per spelform och per spelbolag
+ 
+ Vi som aktieägare, politiker och medborgare har rätt att veta. Och historien visar att spelbolagen inte tänker berätta frivilligt. Rummet blir tyst.
