@@ -1,0 +1,162 @@
+---
+title: "När V.I. faktiskt betyder Very Important"
+date: "2016-08-04"
+output:
+  tufte::tufte_html: default
+  tufte::tufte_handout:
+    citation_package: natbib
+    latex_engine: xelatex
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
+link-citations: yes
+---
+
+```{r setup, include=FALSE}
+library(tufte)
+# invalidate cache when the tufte version changes
+knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'))
+options(htmltools.dir.version = FALSE)
+```
+
+
+```{r, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(scales)
+library(ggrepel)
+
+```
+
+
+```{r, include=FALSE}
+signif.comma <- function(x, digits=3) comma(signif(x, digits))
+percent <- function(x, dec=0) paste0(round(100*x, dec), '%')
+```
+
+
+```{r, include=FALSE}
+products <- c('Sportsbook fixed-odds', 'Sportsbook live-action', 'Poker BossMedia', 'Casino BossMedia', 'SuperToto', 'Games VS', 'Games bwin', 'Games Chartwell')
+
+df <- read.table(unz("bwin.zip", "RawDataIIUserDailyAggregation.txt"), header=TRUE, sep=",")
+
+df %<>%
+  tbl_df() %>%
+  transmute(user_id=UserID,
+            date = Date,
+            product_id = ProductID,
+            stakes = Stakes,
+            winnings = Winnings,
+            bets = Bets) %>%
+  mutate(date = as.Date(as.character(date), format="%Y%m%d"),
+         product = factor(products[product_id]),
+         game = sub(" .*", "", product))
+
+```
+
+> Bara i år har hon blockat 2 000 mejladresser. Men inget hjälper. De fortsätter att tjata. Ber om att hon ska komma tillbaka. Lockar med erbjudanden och gratis spel.
+>
+> `r tufte::quote_footer('[Göteborgsposten, 2016-08-03](http://www.gp.se/spelandet-f%C3%B6rst%C3%B6rde-mitt-liv-1.3526798)')`
+
+
+Spelbolagen trålar med finmaskiga marknadsföringsnät efter det tiotal procent som kan tänkas registrera ett konto på en färgglad hemsida från Malta. Och väl där blir man uppmärksammad som aldrig förr, med mail och SMS och, från gång till annan, ett telefonsamtal från en käck tjugoåring som undrar hur allt står till. Har man en gång varit storspelare, övergår uppmärksammandet närmast till stalking.
+
+Ännu en gång. Spelbranchen tjänar stora pengar, men på få personer. Att utmåla detta fenomen som något folkligt är fel, och hjälper ingen. Utom spelbolagen, som ingen hjälp behöver. De behöver stramare tyglar.
+
+
+```{r, include=FALSE}
+signlog_trans = function() trans_new("signlog", function(x) { ifelse(x == 0, 0, sign(x) * log10(ceiling(abs(x)))) },
+                                                function(x) { ifelse(x == 0, 0, sign(x) * 10^abs(x)) })
+
+
+df.tmp <- df %>%
+  filter(date >= as.Date('2005-04-01'), date < as.Date('2005-10-01')) %>%
+  group_by(user_id, month=format(date, "%b")) %>%
+  summarize(net = sum(winnings - stakes),
+            net.limit = max(sum(winnings - stakes), -2000)) %>%
+  group_by(user_id) %>%
+  summarize(net = sum(net),
+            net.limit = sum(net.limit)) %>%
+  arrange(net) %>%
+  mutate(cum.net = cumsum(-net),
+         cum.net.limit = cumsum(-net.limit),
+         n = rank(net),
+         p = n / length(net))
+```
+
+För att, ännu en gång, illustrera skevheten tittar vi in i [den data bwin släppte till forskning 2005](http://www.thetransparencyproject.org/Availabledataset). Här finns speldata för `r signif.comma(nrow(df.tmp),2)` personer under april till september, sex månader. Ett enkelt sätt att undersöka varifrån pengarna kommer, är ett kumulativt diagram över spelarnas förluster.
+
+
+```{r, echo=FALSE, warning=FALSE, fig.fullwidth=TRUE, fig.width=9, fig.height=5}
+
+df.breaks = data.frame(b=c(-1600, -100)) %>%
+  group_by(b) %>%
+  mutate(n = sum(df.tmp$net <= b),
+         p = mean(df.tmp$net <= b),
+         cum.net = df.tmp[n,]$cum.net) %>%
+  ungroup() %>%
+    mutate(label = paste0('€', ifelse(b > 0, '+', ''), b, " / p"))
+
+
+ggplot(df.tmp, aes(p, cum.net)) +
+  geom_line(aes(color=net), size=2) +
+
+  geom_point(data=df.breaks) +
+  geom_label_repel(data=df.breaks, aes(label=label), nudge_y=-500000) +
+  
+  annotate('point', x=1, y=-sum(df.tmp$net)) +
+  annotate('text_repel', x=1, y=-sum(df.tmp$net),
+           label=paste0("Spelbolagets vinst\n€", comma(signif(-sum(df.tmp$net), 3))),
+           nudge_y = -1000000,
+           nudge_x = -0.1) +
+  
+  labs(x="", y="") +
+  scale_x_continuous(label=percent) +
+  scale_y_continuous(label=function(x) paste0('€', comma(x))) +
+  scale_color_gradient2(name="Vinst\nper person",
+                        low=muted("red"), mid="yellow", high=muted("green"),
+                        breaks=c(-10000, -1000, -100, -10, 10, 100, 1000),
+                        label = function(x) paste0('€',  ifelse(x > 0, '+', ''), comma(x), ""), trans="signlog") +
+  theme_linedraw()
+
+```
+
+
+Varje punkt är en spelare, sorterade från de som förlorat mest i rött, till de som vunnit mest i grönt. Y-axeln visar hur mycket de spelare vi hittills räknat in har förlorat sammanlagt. Att kurvan vänder nedåt beror på att det finns spelare som vunnit. Genom att slå samman alla vinster och försluster, har spelbolaget tjänat `r paste0('€', signif.comma(-sum(df.tmp$net)))` under halvåret.
+
+25% av spelarna förlorade €100 eller mer. Tillsammans har dessa 25% förlorat knappt 6 miljoner; `r percent( df.tmp[nrow(df.tmp)/4,]$cum.net / max(df.tmp$cum.net ))` av de totala förlusterna. De som spelar mindre skrapar inte ens ihop tillräckligt för att betala ut vinsterna till dem som fru Fortuna lett mot.
+
+`r (n.50 <- with(df.tmp, max(n * (cum.net <= -sum(ifelse(net < 0, net, 0))/2))))` personer, `r percent(n.50 / nrow(df.tmp), 1)`, står för hälften av intäkterna, detta genom att förlora €`r signif.comma(-df.tmp[n.50,]$net, 2)` eller mer. Den mest förlorande promillen står ensamma för `r percent( signif(df.tmp[ceiling(nrow(df.tmp)/1000),]$cum.net, 2) / max(df.tmp$cum.net) )` av pengarna!
+
+Eller för att ta ett ansvarsperspektiv på saken. Norsk Tipping kommer att [införa en obligatorisk totalgräns](http://www.mynewsdesk.com/no/norsk-tipping/pressreleases/norsk-tipping-innfoerer-totalgrense-for-tap-1400706?utm_campaign=send_list&utm_medium=email&utm_source=sendgrid), där ingen norrman ska kunna förlora mer än tjugotusen norska kronor på en månad. Att sätta motsvarande gräns, €2000 per månad, i vår data påverkar `r with(df.tmp, sum(net != net.limit))` spelare, en knapp procent. De kan fortsatt spela bort tjugo tusen kronor var varje månad, men eftersom de inte kan spela bort än mer sjunker spelbolagets intäkter med `r with(df.tmp, percent(1 - sum(net.limit)/sum(net)))`.
+
+
+
+```{r, echo=FALSE, warning=FALSE, fig.fullwidth=TRUE, fig.width=9, fig.height=5}
+ggplot(df.tmp, aes(p, cum.net)) +
+  geom_line(linetype="dashed") +
+  geom_line(aes(y=cum.net.limit)) +
+
+  annotate('point', x=1, y=-sum(df.tmp$net.limit)) +
+  annotate('text_repel', x=1, y=-sum(df.tmp$net.limit),
+           label=paste0("Vinst\nmed €2k-gräns\n€", comma(signif(-sum(df.tmp$net.limit), 3))),
+           nudge_y = -1000000,
+           nudge_x = -0.1) +
+  
+  labs(x="", y="") +
+  scale_x_continuous(label=percent) +
+  scale_y_continuous(label=function(x) paste0('€', comma(x))) +
+  theme_linedraw()
+
+```
+
+Det fordras `r signif.comma(with(df.tmp, (sum(net) - sum(net.limit))/mean(net)), 1)` nya medelspelelare för att hämta igen de pengar man förlorar på en sådan gräns. Eller `r signif.comma(with(df.tmp, (sum(net) - sum(net.limit))/median(net)), 2)` median-diton.
+
+Hand upp alla bolag som frivilligt kan tänka sig införa en sådan gräns i anständighetens namn!
+
+
+Så för en gångs skull står V:et och I:et i VIP faktiskt för Very Important. Det är dessa guldklimpar spelbolagen behöver vaska fram ur allt grus. Det är om dessa kampen står. Det är dessa man i första hand behöver bygga sin verksamhet kring. I sammanhanget är bonusar, telefonsamtal och ett flexibelt samvete det enda rationella.
+
+Ingen behöver bli förvånad nästa gång man läser om hur en spelberoende blir närmast förföljd, eller när den vänlige kundtjänstrepresentanten ringer en vecka efter att du spelade sist för att kolla om allt är OK. Incitamenten kräver det.
+
+Att balansera dessa incitament är omregleringens viktigaste ansvar.
