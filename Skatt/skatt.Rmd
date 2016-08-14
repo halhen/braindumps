@@ -1,0 +1,90 @@
+---
+title: "Om farliga spel"
+date: "2016-08-14"
+output:
+  tufte::tufte_html: default
+  tufte::tufte_handout:
+    citation_package: natbib
+    latex_engine: xelatex
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
+link-citations: yes
+---
+
+```{r setup, include=FALSE}
+library(tufte)
+# invalidate cache when the tufte version changes
+knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'))
+options(htmltools.dir.version = FALSE)
+```
+
+
+Bland sakkunniga är det allmänt accepterat att sambandet mellan spelförluster och spelproblem är svagt. Till och med psykologer, denna yrkeskår härdade av lynniga forskningsobjekt och hårfina orsakspilar, konstaterar att sambandet ligger mellan obefintligt och svagt^[$\rho \approx 0.1$, $AUC \approx 0.6$]. Spelbolagen är snabba med att påminna om att så är fallet när tillfälle ges.
+
+Låt oss borra lite djupare i det hela. Som exempel jämför vi två sätt för allas vårt spelbolag att tjäna en tusenlapp.
+
+En Trisslott kostar 30 kronor. Efter 67 sålda lotter har spelarna köpt spel för tvåtusen. Med 50% återbetalning har en tusenlapp återgått till vinst, medan den återstående diton är på väg till statskassan.
+
+Samma ekvation gäller för en Vegasmaskin. Med en återbetalning på 90% behövs dock hela tiotusen i omsättning för en tusenlapp vinst. Med sex kronor maxinsats innebär detta nästan 1700 spelrundor.
+
+För att spelbolaget ska tjäna samma 1.000 kronor behöver en spelare alltså göra tjugofem gånger fler köp på en Vegas-maskin än per Trisslotter.
+
+
+`r tufte::newthought("Den enskilt bästa prediktorn")` för spelproblem är antal köp. Ju fler lotter, eller pokerhänder, eller maskinsnurr, eller kuponger en person köper, desto större är risken att denne har problem. Det finns förvisso de som spelar mycket utan problem och de som spelar lite med. Icke desto mindre är sambandet mellan antal köp och spelproblem stort nog att vår psykolog skulle kalla det medelstarkt^[$\rho \approx 0.3$] eller starkt^[$AUC \approx 0.75$], beroende på vilka statistiska glasögon hen väljer.
+
+Ju mer man spelar, desto större är risken för problem. Upp till sådär femtio köp på en månad ligger risken konstant lågt. Därefter ökar den stadigt i takt med antalet spelköp^[linjärt mellan logodds och log antal köp]. Detta samband är förvånansvärt lika även mellan spelformer.
+
+```{r, echo=FALSE, fig.width=6, fig.height=4}
+library(tibble)
+library(ggplot2)
+library(scales)
+
+df <- frame_data(
+  ~bets, ~risk,
+  1     , 1,
+  35    , 1,
+  350000, 5)
+
+ggplot(df, aes(bets, risk)) +
+  geom_line() +
+  #geom_hline(yintercept=2, linetype="dotted") +
+  labs(x="Köp / månad", y="Risk") +
+  scale_x_log10(label=comma, breaks=10^(0:5)) +
+  scale_y_continuous(limits=c(0, 6), label=function(x) { rep("", length(x)) }) +
+  theme_linedraw()
+```
+
+
+
+Det tydligaste exemplet på hur spelproblem, förlust och antal spelköp hänger ihop hittar man i poker. Både de som vinner mycket och de som förlorar mycket rapporterar större problem. För många, även spelarna, låter detta märkligt. "*Men jag vinner ju*" får man ofta som kommentar när man varnar för ökad risk. Och visst är poker det spel som ger bäst möjlighet att vinna. Ändå visar vinnande spelare sig oftare ha problem, just för att de spelar mycket.
+
+
+`r tufte::newthought("Diskussionen om")` spels farlighetsgrad handlar oftast om hur stor risken är att skapa spelberoende. Men det finns en andra, minst lika viktig dimension: *hur stora skadeverkningar* spelet ger.
+
+Att förluster har svagare samband med spelproblem än antal spelköp innebär att *ett spelbolag kan tjäna samma mängd pengar med olika mängd skadeverkningar*. År 2015 gav Triss 1750 miljoner i nettointäkter, medan Vegas gav 1200. Ingen skulle på allvar hävda att Triss gav mer problem än Vegas. En av förklaringarna är just de 67 lotterna kontra de 1700 snurren.
+
+`r tufte::newthought("Punktskatten på alkohol")` är ett exempel på hur farliga produkter kan beskattas högre. I alkoholens fall är syftet åtminsone delvis att höja priset för att minska konsumtionen.
+
+Att beskatta spel på samma vis vore förmodligen ingen bra idé. En spelskatt på insatser vore detsamma som att sänka återbetalningen. Det finns mig veterligen inga, eller bara svaga, bevis för att minskad återbetalning skulle göra spel säkrare. Så att använda skatt för att styra konsumtionen hos spelarna ger sannolikt inte ett sundare spel-Sverige.
+
+Det finns däremot två goda anledningar att beskatta *nettointäkterna* utifrån risk: att hantera externaliteter, och att driva en mer önskvärd marknad. 
+
+Internationella studier beräknar att samhällskostnaden för en problemspelare är allt från \$1.200 till \$50.000 per år. [Svenska Spel publicerade en rapport 2009](https://svenskaspel.se/img/omsvs/Spelets_pris_med_f%C3%B6rord.pdf), med ett resultat som ligger i mitten av detta spann. Denna uppskattar att spelproblemen kostar det svenska samhället mellan 2 och 5 miljarder kronor per år. En tjugoprocentig skatt på spelmarknadens tjugo miljarder nettointäkter täcker med andra ord kostnaderna ganska lagom.
+
+Även om vi inte kan komma överens om huruvida farligare spel skapar fler problemspelare, vet vi definitivt att de ger mer skadeverkningar för dem som råkat illa ut. Eftersom spelbolag med mer problemskapande spel åtnjuter fördelarna, är det också rimligt att de betalar mer för att läka skadorna som följer.
+
+Lotterier för välgörenhet bör beskattas lägre än online-Casino. Inte för att välgörenhet är behjärtansvärt, utan för att deras spel orsakar mindre samhällskostnader.
+
+
+
+Den andra anledningen att beskatta spel efter farlighet är att det kan fungera som ett styrmedel för marknaden. I skrivande stund är marknadsföringen för farliga spel i Sverige enorm. Hur skulle en spelmarknad se ut där skatten på problemintäkter var 100%? Eller 50%? Alldeles säkert hade både spelportföljer och marknadsföring sett annorlunda ut, och VIP-programmen hade tvingats ta ansvar för att vara lönsamma.
+
+Utan att vara skattejurist, inser jag att en så flytande efterhandsuträkning som andel problemintäkter knappast kan vara grunden för en skattelagstiftning. Men att beskatta spelformer utifrån ett vedertaget mått på deras farlighetsgrad torde kunna vara mycket mer görbart. Det finns flera sådana, långt mer sofistikerade än hur många rundor som behöver spelas för att generera en tusenlapp.
+
+
+Att fundera kring farlighetsgrad och reglering är knappast nytt. Till exempel skrev Per Binde [en gedigen rapport 2012](http://www.lotteriinspektionen.se/Documents/Externa%20dokument/b5833c6d-57c3-4f8e-8835-b028e194b97e.pdf). Sedan denna skrevs har dock den svenska spelmarknaden fått nya förutsättningar. Bindes rapport är skriven utifrån en verklighet där man tillåter ett spel, eller låter bli. En öppnare marknad ger andra styrmedel och därför andra möjligheter.
+
+
+Det finns med andra ord goda anledningar för kloka män och kvinnor att ta sig an frågan om en mer rättvis och effektiv spelskattestruktur.
+
